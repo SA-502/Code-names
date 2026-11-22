@@ -1,0 +1,7 @@
+# للنشر من "Docker Manager" في Hostinger VPS — اللعبة تفتح على http://IP:80
+services:
+  shifra:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "80:3000"

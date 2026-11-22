@@ -1,0 +1,39 @@
+# الشفرة على Hostinger VPS — يستخدم Traefik الموجود (مشروع n8n) للـ HTTPS.
+# كل ما يعاد تشغيل الحاوية تسحب آخر نسخة من GitHub، يعني "restart" = "تحديث".
+services:
+  web:
+    image: node:22-alpine
+    container_name: shifra-web
+    restart: always
+    command:
+      - sh
+      - -c
+      - >
+        apk add --no-cache git >/dev/null &&
+        rm -rf /srv/app &&
+        git clone --depth 1 --branch "$$SH_BRANCH" "$$SH_REPO" /srv/app &&
+        cd /srv/app &&
+        npm ci --omit=dev --no-audit --no-fund &&
+        exec node server/index.js
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - SH_REPO=${SH_REPO}
+      - SH_BRANCH=${SH_BRANCH}
+    networks:
+      - n8n_default
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=n8n_default
+      - traefik.http.services.shifra.loadbalancer.server.port=3000
+      - traefik.http.routers.shifra.rule=Host(`${SH_HOST}`)
+      - traefik.http.routers.shifra.entrypoints=web,websecure
+      - traefik.http.routers.shifra.tls=true
+      - traefik.http.routers.shifra.tls.certresolver=mytlschallenge
+      - traefik.http.routers.shifra.middlewares=shifra-gzip@docker
+      - traefik.http.middlewares.shifra-gzip.compress=true
+
+networks:
+  n8n_default:
+    external: true

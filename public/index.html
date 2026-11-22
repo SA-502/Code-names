@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>الشفرة — لعبة كلمات جماعية</title>
+<meta name="description" content="لعبة كلمات وتلميحات جماعية أونلاين بالعربي. فريقين، رئيس جواسيس، وتلميح بكلمة ورقم. ادخل برابط أو باركود.">
+<meta name="theme-color" content="#101827">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="logo">ش</span><span class="txt">الشفرة</span></a>
+</header>
+<section class="hero">
+  <h1><span class="r">الش</span><span class="b">فرة</span></h1>
+  <p>فريقين، ورئيس جواسيس لكل فريق يعطي تلميح بكلمة ورقم. اكشفوا كلمات فريقكم قبل الخصم، وانتبهوا من القاتل!</p>
+  <button class="btn" id="create">🎲 إنشاء غرفة</button>
+  <form class="join-code" id="joinForm">
+    <input id="codeInput" maxlength="6" placeholder="كود الغرفة" autocomplete="off">
+    <button class="btn ghost small" type="submit">دخول</button>
+  </form>
+  <div class="demo-grid" aria-hidden="true">
+    <div class="r"></div><div></div><div class="b"></div><div></div><div class="n"></div>
+    <div></div><div class="b"></div><div></div><div class="r"></div><div></div>
+    <div class="n"></div><div></div><div class="k"></div><div></div><div class="b"></div>
+    <div></div><div class="r"></div><div></div><div class="n"></div><div></div>
+    <div class="b"></div><div></div><div class="r"></div><div></div><div class="r"></div>
+  </div>
+</section>
+<section class="howto">
+  <h2>طريقة اللعب</h2>
+  <ol>
+    <li>اضغط <b>إنشاء غرفة</b> وأرسل الرابط لأصحابك أو خلهم يمسحون الباركود.</li>
+    <li>انقسموا لفريقين: <b style="color:var(--red)">الأحمر</b> و<b style="color:var(--blue)">الأزرق</b>، وكل فريق يختار <b>رئيس جواسيس</b> واحد.</li>
+    <li>اللوحة فيها 25 كلمة. رئيس الجواسيس يشوف لون كل كلمة، والباقين ما يشوفون.</li>
+    <li>رئيس الجواسيس يعطي تلميح: <b>كلمة وحدة + رقم</b> (عدد الكلمات المرتبطة فيها).</li>
+    <li>العملاء يخمّنون. لو طلعت كلمة فريقكم تكملون (لين الرقم + 1)، لو محايدة أو للخصم ينتهي دوركم.</li>
+    <li>اللي يكشف <b>القاتل</b> ⬛ يخسر فوراً. أول فريق يكشف كل كلماته يفوز!</li>
+  </ol>
+</section>
+<footer>الشفرة — لعبة كلمات عربية</footer>
+<script>
+document.getElementById('create').onclick = async (e) => {
+  e.target.disabled = true;
+  try {
+    const r = await fetch('/api/rooms', { method: 'POST' });
+    const j = await r.json();
+    if (j.code) location.href = '/r/' + j.code;
+    else alert(j.error || 'صار خطأ');
+  } catch { alert('تعذّر الاتصال بالسيرفر'); }
+  e.target.disabled = false;
+};
+document.getElementById('joinForm').onsubmit = (e) => {
+  e.preventDefault();
+  const c = document.getElementById('codeInput').value.trim().toUpperCase();
+  if (c) location.href = '/r/' + c;
+};
+</script>
+</body>
+</html>

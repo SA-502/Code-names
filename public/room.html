@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>الشفرة — غرفة</title>
+<meta name="theme-color" content="#101827">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="/"><span class="logo">ش</span><span class="txt">الشفرة</span></a>
+  <span class="code-chip" id="codeChip"></span>
+  <span class="count-chip" id="countChip"></span>
+  <span class="spacer"></span>
+  <button class="icon-btn" id="shareBtn" title="مشاركة">🔗</button>
+  <button class="icon-btn" id="rulesBtn" title="القواعد">؟</button>
+  <button class="icon-btn hidden" id="resetBtn" title="لعبة جديدة / الإعدادات">⚙️</button>
+</header>
+
+<main id="app">
+  <!-- اللوبي -->
+  <section id="lobby" class="lobby hidden">
+    <div class="panel share">
+      <div>
+        <h2>ادعُ أصحابك</h2>
+        <p class="muted">أرسل الرابط أو خلهم يمسحون الباركود من جوالاتهم.</p>
+        <div class="linkbox"><code id="roomLink"></code><button class="btn small ghost" id="copyBtn">نسخ</button></div>
+        <div class="btns">
+          <a class="btn small wa" id="waBtn" target="_blank" rel="noopener">واتساب</a>
+          <button class="btn small ghost" id="nativeShare">مشاركة…</button>
+        </div>
+      </div>
+      <div class="qr"><img id="qrImg" alt="باركود الغرفة"></div>
+    </div>
+
+    <div class="panel settings hidden" id="settingsPanel">
+      <h2>إعدادات اللعبة</h2>
+      <label for="wordMode">الكلمات</label>
+      <select id="wordMode">
+        <option value="default">القائمة العربية الأساسية</option>
+        <option value="mixed">الأساسية + كلماتي</option>
+        <option value="custom">كلماتي فقط</option>
+      </select>
+      <div id="customWrap" class="hidden">
+        <label for="customWords">كلماتك (كل كلمة بسطر أو افصل بفاصلة)</label>
+        <textarea id="customWords" placeholder="مثال: الرياض، قهوة، جمل…"></textarea>
+        <div class="muted" id="customCount"></div>
+      </div>
+      <label for="timer">مؤقت الدور</label>
+      <select id="timer">
+        <option value="0">بدون مؤقت</option>
+        <option value="60">60 ثانية</option>
+        <option value="90">90 ثانية</option>
+        <option value="120">دقيقتين</option>
+        <option value="180">3 دقائق</option>
+      </select>
+      <div style="margin-top:10px"><button class="btn small ghost" id="saveSettings">حفظ الإعدادات</button></div>
+    </div>
+
+    <div class="teams" id="lobbyTeams"></div>
+
+    <div class="panel center">
+      <div id="lobbyHint" class="muted"></div>
+      <div class="start-row" style="margin-top:8px">
+        <button class="btn ghost hidden" id="shuffleBtn">🔀 خلط الفرق</button>
+        <button class="btn hidden" id="startBtn">▶️ ابدأ اللعبة</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- اللعبة -->
+  <section id="game" class="hidden">
+    <div id="winner" class="winner-banner hidden"></div>
+    <div class="status" id="status"></div>
+    <div class="board" id="board"></div>
+    <div class="actionbar" id="actionbar"></div>
+    <div class="teams" id="gameTeams"></div>
+  </section>
+</main>
+
+<!-- نافذة الاسم -->
+<div class="modal hidden" id="nameModal">
+  <form class="box" id="nameForm">
+    <h2>وش اسمك؟</h2>
+    <input type="text" id="nameInput" maxlength="20" autocomplete="nickname" placeholder="اسمك في اللعبة" required>
+    <button class="btn" type="submit" style="width:100%">دخول الغرفة</button>
+    <p class="muted center" id="nameErr"></p>
+  </form>
+</div>
+
+<!-- نافذة القواعد -->
+<div class="modal hidden" id="rulesModal">
+  <div class="box">
+    <h2>القواعد</h2>
+    <ol class="rules">
+      <li>فريقين: أحمر وأزرق. كل فريق له <b>رئيس جواسيس</b> والباقي <b>عملاء</b>.</li>
+      <li>الفريق اللي يبدأ عنده 9 كلمات، والثاني 8، وفيه 7 كلمات محايدة وكلمة <b>قاتل</b> وحدة.</li>
+      <li>رئيس الجواسيس يكتب <b>تلميح بكلمة وحدة + رقم</b>. ما يصير التلميح كلمة من اللوحة أو جزء منها.</li>
+      <li>العملاء يضغطون على البطاقة لاقتراحها، ثم <b>✓</b> لكشفها. يقدرون يخمّنون لين <b>الرقم + 1</b>.</li>
+      <li>كلمة فريقك: تكمل. محايدة: ينتهي الدور. كلمة الخصم: تنحسب له وينتهي الدور. <b>القاتل: خسارة فورية</b>.</li>
+      <li>الرقم 0 أو ∞ يعني تخمين بدون حد. بعد أول تخمين تقدرون تضغطون <b>إنهاء التخمين</b>.</li>
+      <li>أول فريق تنكشف كل كلماته يفوز.</li>
+    </ol>
+    <button class="btn" data-close style="width:100%">تمام</button>
+  </div>
+</div>
+
+<!-- نافذة المضيف -->
+<div class="modal hidden" id="hostModal">
+  <div class="box">
+    <h2>خيارات المضيف</h2>
+    <p class="muted">إنهاء اللعبة الحالية والرجوع للوبي لتغيير الفرق أو الإعدادات.</p>
+    <div class="start-row">
+      <button class="btn" id="newGameBtn">🔄 لعبة جديدة الحين</button>
+      <button class="btn ghost" id="toLobbyBtn">↩️ رجوع للوبي</button>
+    </div>
+    <div style="margin-top:12px"><button class="btn ghost small" data-close style="width:100%">إغلاق</button></div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/room.js"></script>
+</body>
+</html>
